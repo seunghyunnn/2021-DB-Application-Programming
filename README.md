@@ -24,13 +24,13 @@ Since this program used local database, `DATABASEREMOTE` section in `config.ini`
 
 ##### 5. To Run 
 
-####### On windows, 
+###### On windows, 
 
 - Install Windows Subsystem for Linux(WSL)
 - Open a bash terminal
 - Run `./run.command`
 
-####### On Mac/Linux
+###### On Mac/Linux
 
 - Run `./run.command`
 
