@@ -1,0 +1,85 @@
+{% include 'top.html' %}
+<div class="content">
+    <div class="container details">
+        {% if episode | length > 0 %}
+            <h2 class="title"> {{episode[0].podcast_episode_title}} </h2>
+            <hr/>
+            <h3> Episode ID </h3>
+            {{episode[0].media_id}}
+            <br/>
+            <h3> Episode URI </h3>
+            {{episode[0].podcast_episode_uri}}
+            </br></br>
+            <video id="myAudio" controls preload = "auto">
+                <source src={{episode[0].podcast_episode_uri}} ><!--type="audio/mpeg"-->
+                Your browser does not support the audio element.
+            </video>
+            <script>
+                var startTime = JSON.parse({{ start_at | tojson }});
+                var currentId = JSON.parse({{episode[0].media_id | tojson}});
+                var aud = document.getElementById("myAudio");
+                var is_initial = true;
+                var update_count = true;
+                aud.addEventListener('pause',function() { getCurTime();}, true);
+                //aud.addEventListener('loadedmetadata', () => { console.log('meta loaded') });
+                aud.addEventListener('canplaythrough', function(){
+                    if(this.currentTime < parseFloat(startTime) && is_initial){
+                        this.currentTime = parseFloat(startTime);
+                        is_initial = false;
+                    }
+                    this.play();
+                })
+                function getCurTime(){
+                    fetch(`/playersave/${currentId}/${aud.currentTime}/
+                    ${((aud.currentTime/aud.duration)*100).toFixed(2)}/${update_count}`)
+                    .then(update_count = false);
+                }
+
+            </script>
+            <br/>
+            <h3> Episode Date Published </h3>
+            {{episode[0].podcast_episode_published_date}}
+            <br/>
+            <h3> Episode Length </h3>
+            Episode is {{episode[0].podcast_episode_length}} seconds long.
+            <br/>
+            <h3> Artworks </h3>
+            {% for instance in episode %}
+                {% if instance.md_type_name == 'artwork' %}
+                    <div>
+                    <img src="{{instance.md_value}}" alt="image" style="max-width:600px;width:100%">
+                    <br/>© Spotify Public Domain 2019.
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <br/>
+            <h3> Descriptions </h3>
+            {% for instance in episode %}
+                {% if instance.md_type_name == 'description' %}
+                    <div>
+                    {{instance.md_value}}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <h3> Genres </h3>
+            {% for instance in episode %}
+                {% if instance.md_type_name == 'podcast genre' %}
+                    <a href="{{ url_for('single_genre',genre_id=instance.md_id)}}">
+                        <div>
+                            {{instance.md_value}}
+                        </div>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <h2 class="title"> Invalid Podcast Episode ID</h2>
+        {% endif %}
+        <!-- TODO Query (7)
+        Display All Relevant Podcast Episode Infromation including meta data
+        -->
+        <!-- TODO - Query (10)
+        You will have to modify the above approach slightly to make each genre clickable
+        -->
+    </div>
+</div>
+{% include 'bottom.html'%}

@@ -1,0 +1,59 @@
+{% include 'top.html' %}
+<div class="content">
+    <div class="container details">
+        <!-- Check if We have a valid tvshow ep -->
+        {% if tvshowep | length > 0 %}
+            <h2 class="title"> {{tvshowep[0].tvshow_episode_title}} aired on {{tvshowep[0].air_date}} </h2>
+            <br/>
+            <h2 class="title"> Season {{tvshowep[0].season}}, Episode {{tvshowep[0].episode}} </h2>
+            <br/>
+            
+            <h3> Artworks </h3>
+            {% for instance in tvshowep %}
+                {% if instance.md_type_name == 'artwork' %}
+                    <img src="{{instance.md_value}}" alt="image">
+                    <br/>© Amazon Public Domain 2019.
+                {% endif %}
+            {% endfor %}
+            <br/>
+            <h3> Descriptions </h3>
+            {% for instance in tvshowep %}
+                {% if instance.md_type_name == 'description' %}
+                    <div>
+                        {{instance.md_value}}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <video id="myAudio" controls preload = "auto">
+                <source src={{tvshowep[0].storage_location}} ><!--type="audio/mpeg"-->
+                Your browser does not support the audio element.
+            </video>
+            <script>
+                var startTime = JSON.parse({{ start_at | tojson }});
+                var currentId = JSON.parse({{tvshowep[0].media_id | tojson}});
+                var aud = document.getElementById("myAudio");
+                var is_initial = true;
+                var update_count = true;
+                aud.addEventListener('pause',function() { getCurTime();}, true);
+                //aud.addEventListener('loadedmetadata', () => { console.log('meta loaded') });
+                aud.addEventListener('canplaythrough', function(){
+                    if(this.currentTime < parseFloat(startTime) && is_initial){
+                        this.currentTime = parseFloat(startTime);
+                        is_initial = false;
+                    }
+                    this.play();
+                })
+                function getCurTime(){
+                    fetch(`/playersave/${currentId}/${aud.currentTime}/
+                        ${((aud.currentTime/aud.duration)*100).toFixed(2)}/${update_count}`)
+                        .then(update_count = false);
+                }
+
+            </script>
+        {% else %}
+            <h2 class="title"> Invalid TV Show Ep ID</h2>
+        {% endif %}
+    </div>
+</div>
+{% include 'bottom.html'%}
